@@ -2,14 +2,15 @@ using System.Linq;
 using Content.Server.Administration;
 using Content.Server.GameTicking;
 using Content.Server.GameTicking.Rules;
-using Content.Server.GameTicking.Rules.Components;
 using Content.Server.StationEvents.Components;
 using Content.Shared.Administration;
 using Content.Shared.GameTicking.Components;
+using Content.Shared.CCVar;
 using JetBrains.Annotations;
 using Robust.Shared.Random;
 using Robust.Shared.Toolshed;
 using Robust.Shared.Utility;
+using Robust.Shared.Configuration;
 
 namespace Content.Server.StationEvents
 {
@@ -22,9 +23,7 @@ namespace Content.Server.StationEvents
     {
         [Dependency] private readonly IRobustRandom _random = default!;
         [Dependency] private readonly EventManagerSystem _event = default!;
-
-        public const float MinEventTime = 60 * 3;
-        public const float MaxEventTime = 60 * 10;
+        [Dependency] private readonly IConfigurationManager _cfg = default!;
 
         protected override void Ended(EntityUid uid, BasicStationEventSchedulerComponent component, GameRuleComponent gameRule,
             GameRuleEndedEvent args)
@@ -62,13 +61,15 @@ namespace Content.Server.StationEvents
         /// </summary>
         private void ResetTimer(BasicStationEventSchedulerComponent component)
         {
-            component.TimeUntilNextEvent = _random.NextFloat(MinEventTime, MaxEventTime);
+            component.TimeUntilNextEvent = _random.NextFloat(_cfg.GetCVar(CCVars.EventsBasicMinTime), _cfg.GetCVar(CCVars.EventsBasicMaxTime));
         }
     }
 
     [ToolshedCommand, AdminCommand(AdminFlags.Debug)]
     public sealed class StationEventCommand : ToolshedCommand
     {
+        [Dependency] private readonly IConfigurationManager _cfg = default!;
+
         private EventManagerSystem? _stationEvent;
         private BasicStationEventSchedulerSystem? _basicScheduler;
         private IRobustRandom? _random;
@@ -111,7 +112,7 @@ namespace Content.Server.StationEvents
                 while (curTime.TotalSeconds < randomEndTime)
                 {
                     // sim an event
-                    curTime += TimeSpan.FromSeconds(_random.NextFloat(BasicStationEventSchedulerSystem.MinEventTime, BasicStationEventSchedulerSystem.MaxEventTime));
+                    curTime += TimeSpan.FromSeconds(_random.NextFloat(_cfg.GetCVar(CCVars.EventsBasicMinTime), _cfg.GetCVar(CCVars.EventsBasicMaxTime)));
                     var available = _stationEvent.AvailableEvents(false, playerCount, curTime);
                     var ev = _stationEvent.FindEvent(available);
                     if (ev == null)

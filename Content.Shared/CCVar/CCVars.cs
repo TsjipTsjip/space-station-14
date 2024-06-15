@@ -111,6 +111,18 @@ namespace Content.Shared.CCVar
             EventsEnabled = CVarDef.Create("events.enabled", true, CVar.ARCHIVE | CVar.SERVERONLY);
 
         /// <summary>
+        ///     Controls the minimum time between events for the BasicStationEventScheduler in minutes.
+        /// </summary>
+        public static readonly CVarDef<float>
+            EventsBasicMinTime = CVarDef.Create("events.basic_min_time", 3f, CVar.ARCHIVE | CVar.SERVERONLY);
+
+        /// <summary>
+        ///     Controls the maximum time between events for the BasicStationEventScheduler in minutes.
+        /// </summary>
+        public static readonly CVarDef<float>
+            EventsBasicMaxTime = CVarDef.Create("events.basic_max_time", 10f, CVar.ARCHIVE | CVar.SERVERONLY);
+
+        /// <summary>
         ///     Average time (in minutes) for when the ramping event scheduler should stop increasing the chaos modifier.
         ///     Close to how long you expect a round to last, so you'll probably have to tweak this on downstreams.
         /// </summary>
